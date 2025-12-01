@@ -89,6 +89,6 @@ router.delete("/:id", async (req: Request, res: Response) => {
 });
 
 router.get("/stats/dashboard", getDashboard);
-router.get("/farmers", fetchAllFarmers );
+router.get("/farmers/all", fetchAllFarmers );
 
 export default router;
