@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import jwt, { SignOptions  } from "jsonwebtoken";
-import { User } from "../models/User";
+import { Admin } from "../models/User";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -29,14 +29,14 @@ export const register = async (req: Request, res: Response) => {
   try {
     const { name, email, password } = req.body;
 
-    const exists = await User.findOne({ where: { email } });
+    const exists = await Admin.findOne({ where: { email } });
     if (exists) {
       return res.status(400).json({ message: "Email already registered" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const user = await User.create({
+    const user = await Admin.create({
       name,
       email,
       password: hashedPassword,
@@ -53,7 +53,7 @@ export const login = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
 
-    const user = await User.findOne({ where: { email } });
+    const user = await Admin.findOne({ where: { email } });
     if (!user) return res.status(400).json({ message: "Invalid email or password" });
 
     const isMatch = await bcrypt.compare(password, user.password);
@@ -78,7 +78,7 @@ export const login = async (req: Request, res: Response) => {
 // Profile (protected)
 export const profile = async (req: Request & { user?: any }, res: Response) => {
   try {
-    const user = await User.findByPk(req.user.id, {
+    const user = await Admin.findByPk(req.user.id, {
       attributes: ["id", "name", "email"],
     });
     res.json(user);
