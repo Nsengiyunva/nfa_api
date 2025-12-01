@@ -4,6 +4,8 @@ import farmerRoutes from "./routes/farmerRoutes";
 import authRoutes from "./routes/authRoutes";
 import { sequelize, connectDB } from "./config/database";
 import cors from "cors";
+import "./models/associations"; // <-- import associations
+import nfaMainRoutes from "./routes/nfaMainRoutes";
 
 dotenv.config();
 

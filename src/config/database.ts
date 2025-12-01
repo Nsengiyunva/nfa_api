@@ -11,10 +11,20 @@ export const sequelize = new Sequelize(
 );
 
 export const connectDB = async () => {
+  // try {
+  //   await sequelize.authenticate();
+  //   console.log("Database - MySQL connected....");
+  // } catch (error) {
+  //   console.error("DB Error:", error);
+  // }
   try {
     await sequelize.authenticate();
-    console.log("Database - MySQL connected....");
+    console.log("Database connected");
+
+    await sequelize.sync({ alter: true });
+    console.log("All models synchronized...");
+
   } catch (error) {
-    console.error("DB Error:", error);
+    console.error("Unable to start server:", error);
   }
 };
