@@ -146,7 +146,7 @@ export const createFarmer = async (req: Request, res: Response) => {
 
       // Next of Kin table
       if (farmer.nok_lastname) {
-        await NfaSpouseDetail.create({
+        await NfaNok.create({
           parentID: forest.id,
           first_name: farmer.nok_firstname,
           surname: farmer.nok_lastname,

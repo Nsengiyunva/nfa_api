@@ -8,7 +8,7 @@ import {
   NfaSpouseDetail,
   NfaNok
 } from "../models";
-import { getDashboard, fetchAllFarmers } from "../controllers/farmerController";
+import { getDashboard, fetchAllFarmers,  createFarmer } from "../controllers/farmerController";
 
 const router = Router();
 
@@ -53,14 +53,15 @@ router.get("/:id", async (req: Request, res: Response) => {
 });
 
 // CREATE a new farmer
-router.post("/", async (req: Request, res: Response) => {
-  try {
-    const farmer = await NfaMain.create(req.body);
-    res.status(201).json(farmer);
-  } catch (error) {
-    res.status(500).json({ message: "Server error", error });
-  }
-});
+// router.post("/", async (req: Request, res: Response) => {
+//   try {
+//     const farmer = await NfaMain.create(req.body);
+//     res.status(201).json(farmer);
+//   } catch (error) {
+//     res.status(500).json({ message: "Server error", error });
+//   }
+// });
+router.post("/create", createFarmer);
 
 // UPDATE farmer
 router.put("/:id", async (req: Request, res: Response) => {
