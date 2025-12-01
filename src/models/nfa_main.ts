@@ -3,6 +3,7 @@ import { sequelize } from "../config/database";
 
 export class NfaMain extends Model {
   public id!: number;
+  public farmer_type!: string; 
 }
 
 NfaMain.init(

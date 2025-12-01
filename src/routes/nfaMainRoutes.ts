@@ -9,6 +9,7 @@ import {
   NfaNok
 } from "../models";
 import { getDashboard, fetchAllFarmers,  createFarmer } from "../controllers/farmerController";
+import { getFarmer } from "../controllers/nfaMainController";
 
 const router = Router();
 
@@ -32,35 +33,9 @@ router.get("/", async (req: Request, res: Response) => {
 });
 
 // GET single farmer by ID with related data
-router.get("/:id", async (req: Request, res: Response) => {
-  try {
-    const farmer = await NfaMain.findByPk(req.params.id, {
-      include: [
-        { model: NfaIndividual, as: "individuals" },
-        { model: NfaGroupMember, as: "groupMembers" },
-        { model: NfaBlockDetail, as: "blockDetails" },
-        { model: NfaHectareDetail, as: "hectareDetails" },
-        { model: NfaSpouseDetail, as: "spouseDetail" },
-        { model: NfaNok, as: "noks" }
-      ]
-    });
+router.get("/farmers/:id", getFarmer);
 
-    if (!farmer) return res.status(404).json({ message: "Farmer not found" });
-    res.json(farmer);
-  } catch (error) {
-    res.status(500).json({ message: "Server error", error });
-  }
-});
-
-// CREATE a new farmer
-// router.post("/", async (req: Request, res: Response) => {
-//   try {
-//     const farmer = await NfaMain.create(req.body);
-//     res.status(201).json(farmer);
-//   } catch (error) {
-//     res.status(500).json({ message: "Server error", error });
-//   }
-// });
+//add farmer
 router.post("/create", createFarmer);
 
 // UPDATE farmer

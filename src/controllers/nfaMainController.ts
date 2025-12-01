@@ -249,29 +249,45 @@ export const getFarmer = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
-    const farmer = await NfaMain.findOne({
-      where: { id },
-      include: [
-        { model: NfaIndividual, as: "individuals" },
-        { model: NfaGroupMember, as: "groupMembers" },
-        { model: NfaBlockDetail, as: "blockDetails" },
-        { model: NfaHectareDetail, as: "hectareDetails" },
-        { model: NfaSpouseDetail, as: "spouseDetail" },
-        { model: NfaNok, as: "noks" },
-      ],
-    });
+    // Main parent table
+    const main = await NfaMain.findByPk(id);
 
-    if (!farmer) return res.status(404).json({ message: "Farmer not found" });
+    if (!main) {
+      return res.status(404).json({ success: false, message: "Farmer not found" });
+    }
 
-    res.json(farmer);
+    // Other related tables
+    const block = await NfaBlockDetail.findOne({ where: { parentID: id } });
+    const hectare = await NfaHectareDetail.findOne({ where: { parentID: id } });
+    const payment = await NfaPayment.findOne({ where: { parentID: id } });
+    const planting = await NfaPlanting.findOne({ where: { parentID: id } });
+
+    // Response object
+    let responseData: any = {
+      main,
+      block,
+      hectare,
+      payment,
+      planting,
+    };
+
+    // Individual farmer
+    if (main?.farmer_type?.toUpperCase() === "INDIVIDUAL") {
+      const person = await NfaIndividual.findOne({ where: { parentID: id } });
+      const spouse = await NfaSpouseDetail.findOne({ where: { parentID: id } });
+      const nok = await NfaNok.findOne({ where: { parentID: id } });
+
+      responseData = { ...responseData, person, spouse, nok };
+    }
+
+    return res.json({ success: true, record: responseData });
   } catch (error) {
-    res.status(500).json({ error });
+    console.error("Error fetching forest application:", error);
+    return res.status(500).json({ success: false, error });
   }
 };
 
-// --------------------
-// Update farmer by ID (main + related tables)
-// --------------------
+
 export const updateFarmer = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
