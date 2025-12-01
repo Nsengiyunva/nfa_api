@@ -4,7 +4,7 @@ import farmerRoutes from "./routes/farmerRoutes";
 import authRoutes from "./routes/authRoutes";
 import { sequelize, connectDB } from "./config/database";
 import cors from "cors";
-import "./models/associations"; // <-- import associations
+// import "./models/associations"; // <-- import associations
 import nfaMainRoutes from "./routes/nfaMainRoutes";
 
 dotenv.config();
@@ -16,7 +16,7 @@ app.use(express.json());
 
 app.use("/api/auth", authRoutes);
 app.use("/api/farmers", farmerRoutes);
-app.use("/api/farmers", nfaMainRoutes);
+app.use("/api/nfa", nfaMainRoutes);
 
 console.log("JWT_SECRET:", process.env.JWT_SECRET);
 

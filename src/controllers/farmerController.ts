@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { Farmer } from "../models/Farmer";
+import { sequelize } from "../models"; // IMPORTANT: import sequelize instance
 
 // Create
 export const createFarmer = async (req: Request, res: Response) => {
@@ -26,7 +27,9 @@ export const getFarmerById = async (req: Request, res: Response) => {
   try {
     const farmer = await Farmer.findByPk(req.params.id);
     if (!farmer)
-      return res.status(404).json({ success: false, message: "Farmer not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Farmer not found" });
 
     res.json({ success: true, farmer });
   } catch (error) {
@@ -39,12 +42,68 @@ export const updateFarmer = async (req: Request, res: Response) => {
   try {
     const farmer = await Farmer.findByPk(req.params.id);
     if (!farmer)
-      return res.status(404).json({ success: false, message: "Farmer not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Farmer not found" });
 
     await farmer.update(req.body);
 
     res.json({ success: true, farmer });
   } catch (error) {
+    res.status(500).json({ success: false, error });
+  }
+};
+
+
+export const getDashboard = async (_req: Request, res: Response) => {
+  try {
+    const ranges_query = `
+      SELECT DISTINCT 
+          (CASE WHEN b.range = "OTHER" THEN range_other ELSE b.range END) AS range,
+          a.farmer_category,
+          COUNT(a.id) AS farmers
+      FROM nfa_main a
+      LEFT JOIN nfa_block_details b ON (a.id = b.parentID)
+      GROUP BY 
+          (CASE WHEN b.range = "OTHER" THEN range_other ELSE b.range END),
+          farmer_category;
+    `;
+
+    const category_query = `
+      SELECT DISTINCT farmer_category, COUNT(id) AS farmers 
+      FROM nfa_main 
+      GROUP BY farmer_category;
+    `;
+
+    const type_query = `
+      SELECT DISTINCT farmer_type, COUNT(id) AS farmers 
+      FROM nfa_main 
+      GROUP BY farmer_type;
+    `;
+
+    const gender_query = `
+      SELECT DISTINCT gender, COUNT(a.id) AS farmers 
+      FROM nfa_main a
+      LEFT JOIN nfa_individual b ON (a.id = b.parentID)
+      WHERE gender IS NOT NULL
+      GROUP BY gender;
+    `;
+
+    const [ranges] = await sequelize.query(ranges_query);
+    const [categories] = await sequelize.query(category_query);
+    const [types] = await sequelize.query(type_query);
+    const [gender] = await sequelize.query(gender_query);
+
+    return res.json({
+      success: true,
+      ranges,
+      categories,
+      types,
+      gender,
+    });
+
+  } catch (error) {
+    console.error(error);
     res.status(500).json({ success: false, error });
   }
 };

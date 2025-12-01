@@ -8,6 +8,7 @@ import {
   NfaSpouseDetail,
   NfaNok
 } from "../models";
+import { getDashboard } from "../controllers/farmerController";
 
 const router = Router();
 
@@ -86,5 +87,7 @@ router.delete("/:id", async (req: Request, res: Response) => {
     res.status(500).json({ message: "Server error", error });
   }
 });
+
+router.get("/stats/dashboard", getDashboard);
 
 export default router;
