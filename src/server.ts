@@ -16,6 +16,7 @@ app.use(express.json());
 
 app.use("/api/auth", authRoutes);
 app.use("/api/farmers", farmerRoutes);
+app.use("/api/farmers", nfaMainRoutes);
 
 console.log("JWT_SECRET:", process.env.JWT_SECRET);
 
