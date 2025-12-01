@@ -8,7 +8,7 @@ import {
   NfaSpouseDetail,
   NfaNok
 } from "../models";
-import { getDashboard, fetchAllFarmers,  createFarmer } from "../controllers/farmerController";
+import { getDashboard, fetchFarmers,  createFarmer } from "../controllers/farmerController";
 import { getFarmer } from "../controllers/nfaMainController";
 
 const router = Router();
@@ -65,6 +65,6 @@ router.delete("/:id", async (req: Request, res: Response) => {
 });
 
 router.get("/stats/dashboard", getDashboard);
-router.get("/farmers/all", fetchAllFarmers );
+router.get("/farmers/all", fetchFarmers );
 
 export default router;

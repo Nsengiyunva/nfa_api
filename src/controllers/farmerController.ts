@@ -109,7 +109,7 @@ export const getDashboard = async (_req: Request, res: Response) => {
   }
 };
 
-export const fetchAllFarmers = async (_req: Request, res: Response) => {
+export const fetchFarmers = async (_req: Request, res: Response) => {
   try {
     const query = `
       SELECT DISTINCT
