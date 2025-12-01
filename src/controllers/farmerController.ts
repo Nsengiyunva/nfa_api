@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
-import { Farmer } from "../models/Farmer";
-import { sequelize } from "../models"; // IMPORTANT: import sequelize instance
-
+import { Farmer, NfaBlockDetail, NfaMain, NfaGroupMember, NfaHectareDetail, NfaIndividual, NfaNok, NfaSpouseDetail  } from "../models";
+import { sequelize } from "../models";
 // Create
 export const createFarmer = async (req: Request, res: Response) => {
   try {
@@ -111,52 +110,44 @@ export const getDashboard = async (_req: Request, res: Response) => {
 
 export const fetchFarmers = async (_req: Request, res: Response) => {
   try {
-    const query = `
-      SELECT DISTINCT
-      a.physical_address,
-      a.postal_address,
-      a.tin,
-      a.documentID,
-      a.issue_date,
-      a.stage,
-      a.director_comments,
-      a.executive_comments,
-      a.id,
-      d.gender,
-      a.documentID,
-      b.period,
-      a.licenseID,
-      a.updated_at,
-      a.primary_contact,
-      a.farmer_category,
-      a.email_address,
-      a.name,
-      a.farmer_type,
-      a.clientID,
-      b.total_area_planted,
-      b.hectares_allocated,
-      b.rateperha,
-      c.block_number,
-      (CASE WHEN c.\`range\` = 'OTHER' THEN c.range_other ELSE c.\`range\` END) AS \`range\`,
-      (CASE WHEN c.sector = 'OTHER' THEN c.sector_other ELSE c.sector END) AS sector,
-      (CASE WHEN c.beat = 'OTHER' THEN c.beat_other ELSE c.beat END) AS beat,
-      (CASE WHEN c.reserve = 'OTHER' THEN c.reserve_other ELSE c.reserve END) AS reserve
-  FROM nfa_main a
-  LEFT JOIN nfa_hectare_details b ON a.id = b.parentID
-  LEFT JOIN nfa_block_details c ON a.id = c.parentID
-  LEFT JOIN nfa_individual d ON a.id = d.parentID
-    `;
-
-    const [farmers] = await sequelize.query(query);
+    const farmers = await NfaMain.findAll({
+      include: [
+        {
+          model: NfaHectareDetail,
+          as: "hectares",
+          attributes: ["period", "total_area_planted", "hectares_allocated", "rateperha"],
+        },
+        {
+          model: NfaBlockDetail,
+          as: "blocks",
+          attributes: [
+            "block_number",
+            "range",
+            "range_other",
+            "sector",
+            "sector_other",
+            "beat",
+            "beat_other",
+            "reserve",
+            "reserve_other",
+          ],
+        },
+        {
+          model: NfaIndividual,
+          as: "individual",
+          attributes: ["first_name", "surname", "middle_name", "gender"],
+        },
+      ],
+      order: [["id", "DESC"]],
+    });
 
     return res.json({
       success: true,
-      records: farmers
+      records: farmers,
     });
-
   } catch (error) {
     console.error("fetchAllFarmers Error:", error);
-    res.status(500).json({ success: false, error });
+    return res.status(500).json({ success: false, error });
   }
 };
 

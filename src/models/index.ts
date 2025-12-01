@@ -6,6 +6,7 @@ import { NfaBlockDetail } from "./nfa_block_detail";
 import { NfaHectareDetail } from "./nfa_hectare_detail";
 import { NfaSpouseDetail } from "./nfa_spouse_detail";
 import { NfaNok } from "./nfa_nok";
+import { Farmer } from "./Farmer";
 
 // Export models
 export {
@@ -16,5 +17,6 @@ export {
   NfaBlockDetail,
   NfaHectareDetail,
   NfaSpouseDetail,
-  NfaNok
+  NfaNok,
+  Farmer
 };

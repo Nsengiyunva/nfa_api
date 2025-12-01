@@ -8,8 +8,8 @@ import {
   NfaSpouseDetail,
   NfaNok
 } from "../models";
-import { getDashboard, fetchFarmers,  createFarmer } from "../controllers/farmerController";
-import { getFarmer } from "../controllers/nfaMainController";
+import { getDashboard, fetchFarmers } from "../controllers/farmerController";
+import { getFarmer, createFarmer } from "../controllers/nfaMainController";
 
 const router = Router();
 

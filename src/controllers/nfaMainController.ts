@@ -9,58 +9,6 @@ import { NfaNok } from "../models/nfa_nok";
 import { NfaPayment } from "../models/nfa_payment";
 import { NfaPlanting } from "../models/nfa_planting";
 
-// import { NfaPlanting } from "../models/nfa_planting";
-// import { NfaPayment } from "../models/nfa_payment";
-
-// --------------------
-// Create a new farmer
-// --------------------
-// export const createFarmer = async (req: Request, res: Response) => {
-//   try {
-//     const { main, individuals, groupMembers, blockDetails, hectareDetails, spouseDetail, noks } = req.body;
-
-//     const newFarmer = await NfaMain.create(main);
-
-//     // Related data
-//     if (individuals?.length) {
-//       await NfaIndividual.bulkCreate(
-//         individuals.map((i: any) => ({ ...i, parentID: newFarmer.id }))
-//       );
-//     }
-
-//     if (groupMembers?.length) {
-//       await NfaGroupMember.bulkCreate(
-//         groupMembers.map((g: any) => ({ ...g, parentID: newFarmer.id }))
-//       );
-//     }
-
-//     if (blockDetails?.length) {
-//       await NfaBlockDetail.bulkCreate(
-//         blockDetails.map((b: any) => ({ ...b, parentID: newFarmer.id }))
-//       );
-//     }
-
-//     if (hectareDetails?.length) {
-//       await NfaHectareDetail.bulkCreate(
-//         hectareDetails.map((h: any) => ({ ...h, parentID: newFarmer.id }))
-//       );
-//     }
-
-//     if (spouseDetail) {
-//       await NfaSpouseDetail.create({ ...spouseDetail, parentID: newFarmer.id });
-//     }
-
-//     if (noks?.length) {
-//       await NfaNok.bulkCreate(
-//         noks.map((n: any) => ({ ...n, parentID: newFarmer.id }))
-//       );
-//     }
-
-//     res.status(201).json({ message: "Farmer created successfully", newFarmerId: newFarmer.id });
-//   } catch (error) {
-//     res.status(500).json({ error });
-//   }
-// };
 
 export const createFarmer = async (req: Request, res: Response) => {
   try {
