@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { Farmer, NfaBlockDetail, NfaMain, NfaGroupMember, NfaHectareDetail, NfaIndividual, NfaNok, NfaSpouseDetail  } from "../models";
 import { sequelize } from "../models";
+import { literal } from "sequelize";
 // Create
 export const createFarmer = async (req: Request, res: Response) => {
   try {
@@ -122,14 +123,10 @@ export const fetchFarmers = async (_req: Request, res: Response) => {
           as: "blocks",
           attributes: [
             "block_number",
-            "range",
-            "range_other",
-            "sector",
-            "sector_other",
-            "beat",
-            "beat_other",
-            "reserve",
-            "reserve_other",
+            [literal(`CASE WHEN \`range\` = 'OTHER' THEN range_other ELSE \`range\` END`), "range"],
+            [literal(`CASE WHEN sector = 'OTHER' THEN sector_other ELSE sector END`), "sector"],
+            [literal(`CASE WHEN beat = 'OTHER' THEN beat_other ELSE beat END`), "beat"],
+            [literal(`CASE WHEN reserve = 'OTHER' THEN reserve_other ELSE reserve END`), "reserve"],
           ],
         },
         {
