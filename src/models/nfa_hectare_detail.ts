@@ -14,8 +14,8 @@ NfaHectareDetail.init(
     },
 
     parentID: {
-      type: DataTypes.STRING,
-      allowNull: true
+      type: DataTypes.BIGINT,
+      allowNull: false
     },
 
     period: DataTypes.STRING,
