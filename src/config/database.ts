@@ -1,9 +1,9 @@
 import { Sequelize } from "sequelize";
 
 export const sequelize = new Sequelize(
-  "farm_db",
-  "root",
-  "",
+  "erbdb",
+  "erbadmin",
+  "admin@NSE#256",
   {
     host: "localhost",
     dialect: "mysql"
@@ -13,7 +13,7 @@ export const sequelize = new Sequelize(
 export const connectDB = async () => {
   try {
     await sequelize.authenticate();
-    console.log("MySQL connected");
+    console.log("Database - MySQL connected....");
   } catch (error) {
     console.error("DB Error:", error);
   }
