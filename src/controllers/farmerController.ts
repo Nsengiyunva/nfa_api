@@ -111,23 +111,51 @@ export const getDashboard = async (_req: Request, res: Response) => {
 
 export const fetchFarmers = async (_req: Request, res: Response) => {
   try {
-    const farmers = await NfaMain.findAll({
-      include: [
-        { model: NfaHectareDetail, as: "hectares" },
-        { model: NfaBlockDetail, as: "blocks" },
-        { model: NfaIndividual, as: "individual" },
-        { model: NfaSpouseDetail, as: "spouse" },
-        { model: NfaNok, as: "nok" },
-      ],
-      order: [["id", "ASC"]],
-    });
+    const query = `
+      SELECT DISTINCT
+        a.physical_address,
+        a.postal_address,
+        a.tin,
+        a.documentID,
+        a.issue_date,
+        a.stage,
+        a.director_comments,
+        a.executive_comments,
+        a.id,
+        d.gender,
+        b.period,
+        a.licenseID,
+        a.updated_at,
+        a.primary_contact,
+        a.farmer_category,
+        a.email_address,
+        a.name,
+        a.farmer_type,
+        a.clientID,
+        b.total_area_planted,
+        b.hectares_allocated,
+        b.rateperha,
+        c.block_number,
+        (CASE WHEN c.\`range\` = 'OTHER' THEN c.range_other ELSE c.\`range\` END) AS \`range\`,
+        (CASE WHEN c.sector = 'OTHER' THEN c.sector_other ELSE c.sector END) AS sector,
+        (CASE WHEN c.beat = 'OTHER' THEN c.beat_other ELSE c.beat END) AS beat,
+        (CASE WHEN c.reserve = 'OTHER' THEN c.reserve_other ELSE c.reserve END) AS reserve
+      FROM nfa_main a
+      LEFT JOIN nfa_hectare_details b ON a.id = b.parentID
+      LEFT JOIN nfa_block_details c ON a.id = c.parentID
+      LEFT JOIN nfa_individual d ON a.id = d.parentID
+      ORDER BY a.id DESC
+    `;
+
+    const [farmers] = await sequelize.query(query);
 
     return res.json({
       success: true,
-      records: farmers,
+      records: farmers
     });
+
   } catch (error) {
-    console.error("fetchFarmers Error:", error);
+    console.error("fetchAllFarmers Error:", error);
     return res.status(500).json({ success: false, error });
   }
 };
