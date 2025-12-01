@@ -113,29 +113,13 @@ export const fetchFarmers = async (_req: Request, res: Response) => {
   try {
     const farmers = await NfaMain.findAll({
       include: [
-        {
-          model: NfaHectareDetail,
-          as: "hectares",
-          attributes: ["period", "total_area_planted", "hectares_allocated", "rateperha"],
-        },
-        {
-          model: NfaBlockDetail,
-          as: "blocks",
-          attributes: [
-            "block_number",
-            [literal(`CASE WHEN \`range\` = 'OTHER' THEN range_other ELSE \`range\` END`), "range"],
-            [literal(`CASE WHEN sector = 'OTHER' THEN sector_other ELSE sector END`), "sector"],
-            [literal(`CASE WHEN beat = 'OTHER' THEN beat_other ELSE beat END`), "beat"],
-            [literal(`CASE WHEN reserve = 'OTHER' THEN reserve_other ELSE reserve END`), "reserve"],
-          ],
-        },
-        {
-          model: NfaIndividual,
-          as: "individual",
-          attributes: ["first_name", "surname", "middle_name", "gender"],
-        },
+        { model: NfaHectareDetail, as: "hectares" },
+        { model: NfaBlockDetail, as: "blocks" },
+        { model: NfaIndividual, as: "individual" },
+        { model: NfaSpouseDetail, as: "spouse" },
+        { model: NfaNok, as: "nok" },
       ],
-      order: [["id", "DESC"]],
+      order: [["id", "ASC"]],
     });
 
     return res.json({
@@ -143,7 +127,7 @@ export const fetchFarmers = async (_req: Request, res: Response) => {
       records: farmers,
     });
   } catch (error) {
-    console.error("fetchAllFarmers Error:", error);
+    console.error("fetchFarmers Error:", error);
     return res.status(500).json({ success: false, error });
   }
 };

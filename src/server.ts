@@ -4,7 +4,7 @@ import farmerRoutes from "./routes/farmerRoutes";
 import authRoutes from "./routes/authRoutes";
 import { sequelize, connectDB } from "./config/database";
 import cors from "cors";
-// import "./models/associations"; // <-- import associations
+import "./models/associations";
 import nfaMainRoutes from "./routes/nfaMainRoutes";
 import listEndpoints from 'express-list-endpoints';
 
