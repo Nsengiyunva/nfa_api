@@ -7,6 +7,9 @@ import { NfaHectareDetail } from "../models/nfa_hectare_detail";
 import { NfaSpouseDetail } from "../models/nfa_spouse_detail";
 import { NfaNok } from "../models/nfa_nok";
 
+// import { NfaPlanting } from "../models/nfa_planting";
+// import { NfaPayment } from "../models/nfa_payment";
+
 // --------------------
 // Create a new farmer
 // --------------------
