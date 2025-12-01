@@ -244,9 +244,7 @@ export const createFarmer = async (req: Request, res: Response) => {
   }
 };
 
-// --------------------
-// Get farmer by ID (with all related info)
-// --------------------
+
 export const getFarmer = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
