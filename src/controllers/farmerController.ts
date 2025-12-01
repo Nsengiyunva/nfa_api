@@ -58,37 +58,38 @@ export const updateFarmer = async (req: Request, res: Response) => {
 export const getDashboard = async (_req: Request, res: Response) => {
   try {
     const ranges_query = `
-      SELECT DISTINCT 
-          (CASE WHEN b.range = "OTHER" THEN range_other ELSE b.range END) AS range,
-          a.farmer_category,
-          COUNT(a.id) AS farmers
+      SELECT 
+        (CASE WHEN b.range = 'OTHER' THEN b.range_other ELSE b.range END) AS \`range\`,
+        a.farmer_category,
+        COUNT(a.id) AS farmers
       FROM nfa_main a
-      LEFT JOIN nfa_block_details b ON (a.id = b.parentID)
+      LEFT JOIN nfa_block_details b ON a.id = b.parentID
       GROUP BY 
-          (CASE WHEN b.range = "OTHER" THEN range_other ELSE b.range END),
-          farmer_category;
+        (CASE WHEN b.range = 'OTHER' THEN b.range_other ELSE b.range END),
+        a.farmer_category;
     `;
 
     const category_query = `
-      SELECT DISTINCT farmer_category, COUNT(id) AS farmers 
+      SELECT farmer_category, COUNT(id) AS farmers 
       FROM nfa_main 
       GROUP BY farmer_category;
     `;
 
     const type_query = `
-      SELECT DISTINCT farmer_type, COUNT(id) AS farmers 
+      SELECT farmer_type, COUNT(id) AS farmers 
       FROM nfa_main 
       GROUP BY farmer_type;
     `;
 
     const gender_query = `
-      SELECT DISTINCT gender, COUNT(a.id) AS farmers 
+      SELECT gender, COUNT(a.id) AS farmers 
       FROM nfa_main a
-      LEFT JOIN nfa_individual b ON (a.id = b.parentID)
+      LEFT JOIN nfa_individual b ON a.id = b.parentID
       WHERE gender IS NOT NULL
       GROUP BY gender;
     `;
 
+    // Run queries
     const [ranges] = await sequelize.query(ranges_query);
     const [categories] = await sequelize.query(category_query);
     const [types] = await sequelize.query(type_query);
@@ -99,11 +100,12 @@ export const getDashboard = async (_req: Request, res: Response) => {
       ranges,
       categories,
       types,
-      gender,
+      gender
     });
 
   } catch (error) {
-    console.error(error);
+    console.error("Dashboard Error:", error);
     res.status(500).json({ success: false, error });
   }
 };
+
