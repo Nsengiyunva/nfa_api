@@ -109,3 +109,63 @@ export const getDashboard = async (_req: Request, res: Response) => {
   }
 };
 
+export const fetchAllFarmers = async (_req: Request, res: Response) => {
+  try {
+    const query = `
+      SELECT DISTINCT
+          a.physical_address,
+          a.postal_address,
+          a.tin,
+          a.documentID,
+          a.issue_date,
+          a.stage,
+          a.director_comments,
+          a.executive_comments,
+          a.id,
+          d.gender,
+          a.documentID,
+          b.period,
+          a.licenseID,
+          a.updated_at,
+          a.primary_contact,
+          a.farmer_category,
+          a.email_address,
+          a.name,
+          a.farmer_type,
+          a.clientID,
+          b.total_area_planted,
+          b.hectares_allocated,
+          b.rateperha,
+          c.block_number,
+
+          -- Range
+          (CASE WHEN c.range = 'OTHER' THEN c.range_other ELSE c.range END) AS \`range\`,
+
+          -- Sector
+          (CASE WHEN c.sector = 'OTHER' THEN c.sector_other ELSE c.sector END) AS sector,
+
+          -- Beat
+          (CASE WHEN c.beat = 'OTHER' THEN c.beat_other ELSE c.beat END) AS beat,
+
+          -- Reserve
+          (CASE WHEN c.reserve = 'OTHER' THEN c.reserve_other ELSE c.reserve END) AS reserve
+
+      FROM nfa_main a
+      LEFT JOIN nfa_hectare_details b ON a.id = b.parentID
+      LEFT JOIN nfa_block_details c ON a.id = c.parentID
+      LEFT JOIN nfa_individual d ON a.id = d.parentID
+    `;
+
+    const [farmers] = await sequelize.query(query);
+
+    return res.json({
+      success: true,
+      records: farmers
+    });
+
+  } catch (error) {
+    console.error("fetchAllFarmers Error:", error);
+    res.status(500).json({ success: false, error });
+  }
+};
+
