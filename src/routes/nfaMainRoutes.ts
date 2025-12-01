@@ -65,7 +65,7 @@ router.delete("/:id", async (req: Request, res: Response) => {
 });
 
 router.get("/stats/dashboard", getDashboard);
-router.get("all/farmers", async(  req: Request, res: Response ) => {
+router.get("/all/farmers", async(  req: Request, res: Response ) => {
   res.status(200).json( {
     message: "Test"
   } );
