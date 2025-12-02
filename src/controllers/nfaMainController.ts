@@ -199,34 +199,29 @@ export const getFarmer = async (req: Request, res: Response) => {
 
     const main = await NfaMain.findByPk(id, {
       include: [
+        { model: NfaIndividual, as: "individuals", required: false },
+        { model: NfaGroupMember, as: "groupMembers", required: false },
         { model: NfaBlockDetail, as: "blockDetails", required: false },
         { model: NfaHectareDetail, as: "hectareDetails", required: false },
-        { model: NfaPayment, as: "paymentDetails", required: false },
-        { model: NfaPlanting, as: "plantingDetails", required: false },
-      
-        { model: NfaIndividual, as: "person", required: false },
-        { model: NfaSpouseDetail, as: "spouse", required: false },
-        { model: NfaNok, as: "nok", required: false },
-      ]      
+        { model: NfaSpouseDetail, as: "spouseDetail", required: false },
+        { model: NfaNok, as: "noks", required: false },
+
+        // Only works AFTER you add these associations
+        { model: NfaPayment, as: "paymentDetail", required: false },
+        { model: NfaPlanting, as: "plantingDetail", required: false },
+      ],
     });
 
     if (!main) {
       return res.status(404).json({ success: false, message: "Farmer not found" });
     }
 
-    let record: any = main.toJSON();
-    if (record.farmer_type?.toUpperCase() !== "INDIVIDUAL") {
-      delete record.person;
-      delete record.spouse;
-      delete record.nok;
-    }
-
-    return res.json({ success: true, record });
+    return res.json({ success: true, record: main });
   } catch (error) {
     console.error("Error fetching farmer:", error);
     return res.status(500).json({ success: false, error });
   }
-}
+};
 
 export const updateFarmer = async (req: Request, res: Response) => {
   const { id } = req.params; // farmer ID

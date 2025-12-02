@@ -1,4 +1,4 @@
-import { NfaMain, NfaIndividual, NfaGroupMember, NfaBlockDetail, NfaHectareDetail, NfaSpouseDetail, NfaNok } from "./";
+import { NfaMain, NfaIndividual, NfaGroupMember, NfaBlockDetail, NfaHectareDetail, NfaSpouseDetail, NfaNok, NfaPayment, NfaPlanting } from "./";
 
 // NfaMain relationships
 NfaMain.hasMany(NfaIndividual, { foreignKey: "parentID", as: "individuals" });
@@ -18,3 +18,10 @@ NfaSpouseDetail.belongsTo(NfaMain, { foreignKey: "parentID", as: "main" });
 
 NfaMain.hasMany(NfaNok, { foreignKey: "parentID", as: "noks" });
 NfaNok.belongsTo(NfaMain, { foreignKey: "parentID", as: "main" });
+
+NfaMain.hasOne(NfaPayment, { foreignKey: "parentID", as: "paymentDetail" });
+NfaPayment.belongsTo(NfaMain, { foreignKey: "parentID", as: "main" });
+
+NfaMain.hasOne(NfaPlanting, { foreignKey: "parentID", as: "plantingDetail" });
+NfaPlanting.belongsTo(NfaMain, { foreignKey: "parentID", as: "main" });
+
