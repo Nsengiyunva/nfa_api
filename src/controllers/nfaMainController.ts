@@ -196,18 +196,18 @@ export const createFarmer = async (req: Request, res: Response) => {
 export const getFarmer = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    
+
     const main = await NfaMain.findByPk(id, {
       include: [
-        { model: NfaBlockDetail, as: "block", required: false },
-        { model: NfaHectareDetail, as: "hectare", required: false },
-        { model: NfaPayment, as: "payment", required: false },
-        { model: NfaPlanting, as: "planting", required: false },
-        // Individual-specific associations
+        { model: NfaBlockDetail, as: "blockDetails", required: false },
+        { model: NfaHectareDetail, as: "hectareDetails", required: false },
+        { model: NfaPayment, as: "paymentDetails", required: false },
+        { model: NfaPlanting, as: "plantingDetails", required: false },
+      
         { model: NfaIndividual, as: "person", required: false },
         { model: NfaSpouseDetail, as: "spouse", required: false },
         { model: NfaNok, as: "nok", required: false },
-      ],
+      ]      
     });
 
     if (!main) {
