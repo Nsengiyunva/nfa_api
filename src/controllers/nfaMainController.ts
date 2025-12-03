@@ -292,7 +292,7 @@ export const updateFarmer = async (req: Request, res: Response) => {
     }
 
     // Update spouse if married
-    if (farmer.maritalStatus === "MARRIED") {
+    if (farmer.maritalStatus?.toUpperCase() === "MARRIED") {
       const spouse = await NfaSpouseDetail.findOne({ where: { parentID: id } });
       if (spouse) {
         await spouse.update({
@@ -306,6 +306,24 @@ export const updateFarmer = async (req: Request, res: Response) => {
           physical_address: farmer.spousePhysical,
           IDType: farmer.spouseIDType,
           documentID: farmer.spouseID,
+          updated_at: new Date(),
+        });
+      }
+      else {
+        // Create new spouse record
+        await NfaSpouseDetail.create({
+          parentID: id,
+          first_name: farmer.spouseFirstName,
+          surname: farmer.spouseLastName,
+          middle_name: farmer.spouseOther,
+          gender: farmer.spouseGender,
+          primary_contact: farmer.spouseTelephone,
+          secondary_contact: farmer.spouseSecondary,
+          email_address: farmer.spouseEmail,
+          physical_address: farmer.spousePhysical,
+          IDType: farmer.spouseIDType,
+          documentID: farmer.spouseID,
+          created_at: new Date(),
           updated_at: new Date(),
         });
       }
@@ -325,6 +343,22 @@ export const updateFarmer = async (req: Request, res: Response) => {
           email_address: farmer.nok_email_address,
           nok_other: farmer.nok_other,
           relationship: farmer.nok_relationship,
+          updated_at: new Date(),
+        });
+      }
+      else {
+        await NfaNok.create({
+          parentID: id,
+          first_name: farmer.nok_firstname,
+          surname: farmer.nok_lastname,
+          middle_name: farmer.nok_middlename,
+          gender: farmer.nok_gender,
+          primary_contact: farmer.nok_telephone,
+          secondary_contact: farmer.nok_secondary,
+          email_address: farmer.nok_email_address,
+          nok_other: farmer.nok_other,
+          relationship: farmer.nok_relationship,
+          created_at: new Date(),
           updated_at: new Date(),
         });
       }
@@ -371,6 +405,18 @@ export const updateFarmer = async (req: Request, res: Response) => {
           updated_at: new Date(),
         });
       }
+      else {
+        // Create new hectare record
+        await NfaHectareDetail.create({
+          parentID: id,
+          period: farmer.period,
+          total_area_planted: farmer.total_area_planted,
+          hectares_allocated: farmer.hectares_assigned,
+          rateperha: farmer.rate_per_hectare,
+          created_at: new Date(),
+          updated_at: new Date(),
+        });
+      }
     }
 
     // Update planting
@@ -390,6 +436,23 @@ export const updateFarmer = async (req: Request, res: Response) => {
           updated_at: new Date(),
         });
       }
+      else {
+        // Create a new record
+        await NfaPlanting.create({
+          parentID: id,
+          seedling_source: farmer.seedling_source,
+          other_seedling_source: farmer.other_seedling_source,
+          start_year: farmer.startYear,
+          end_year: farmer.endYear,
+          objective: farmer.objective,
+          planting_rate: farmer.plantingrate,
+          funding_source: farmer.fundingsource,
+          species_planted: farmer.speciesPlanted,
+          purpose: farmer.purpose,
+          created_at: new Date(),
+          updated_at: new Date(),
+        });
+      }
     }
 
     // Update payment
@@ -406,11 +469,24 @@ export const updateFarmer = async (req: Request, res: Response) => {
           updated_at: new Date(),
         });
       }
+      else {
+        // Insert new record
+        await NfaPayment.create({
+          parentID: id,
+          baseline: farmer.baseline,
+          opening_balance: farmer.opening_balance,
+          amount_paid: farmer.amount_paid,
+          amount_available: farmer.amount_available,
+          amount_planned: farmer.amount_planned,
+          amount_due: farmer.amount_due,
+          created_at: new Date(),
+          updated_at: new Date(),
+        });
+      }
     }
 
     return res.json({ success: true, message: "Farmer updated successfully" });
   } catch (error) {
-    console.error("updateFarmer Error:", error);
     return res.status(500).json({ success: false, error });
   }
 };
