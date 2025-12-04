@@ -144,6 +144,7 @@ export const fetchFarmers = async (_req: Request, res: Response) => {
       LEFT JOIN nfa_hectare_details b ON a.id = b.parentID
       LEFT JOIN nfa_block_details c ON a.id = c.parentID
       LEFT JOIN nfa_individual d ON a.id = d.parentID
+      WHERE a.status != "DELETED"
       ORDER BY a.id DESC
     `;
 
