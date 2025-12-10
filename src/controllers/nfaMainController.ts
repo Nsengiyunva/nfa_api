@@ -495,6 +495,26 @@ export const updateFarmer = async (req: Request, res: Response) => {
   }
 };
 
+export const deactivateFarmer = async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  try {
+    const main = await NfaMain.findByPk(id);
+    if (!main) {
+      return res.status(404).json({ success: false, message: "Farmer not found" });
+    }
+
+    // Update main farmer table
+    await main.update({
+      status: "DELETED",
+      updated_at: new Date(),
+    });
+    return res.json({ success: true, message: "Farmer removed from the system successfully" });
+  } catch (error) {
+    return res.status(500).json({ success: false, error });
+  }
+}
+
 
 // --------------------
 // Delete farmer by ID
