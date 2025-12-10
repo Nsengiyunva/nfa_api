@@ -14,6 +14,6 @@ router.post("/", createFarmer);
 router.get("/", getFarmers);
 router.get("/:id", getFarmerById);
 router.put("/:id", updateFarmer);
-router.put("/deactivate/:id",  deactivateFarmer);
+router.post("/deactivate",  deactivateFarmer);
 
 export default router;

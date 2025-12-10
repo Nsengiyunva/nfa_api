@@ -496,7 +496,7 @@ export const updateFarmer = async (req: Request, res: Response) => {
 };
 
 export const deactivateFarmer = async (req: Request, res: Response) => {
-  const { id } = req.params;
+  const { id } = req.body;
 
   try {
     // const main = await NfaMain.findByPk(id);
