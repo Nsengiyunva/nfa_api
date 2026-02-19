@@ -131,7 +131,7 @@ export const updateUser = async (req: Request, res: Response) => {
     if (secondaryContact) user.secondaryContact = secondaryContact;
     if (physicalAddress) user.physicalAddress = physicalAddress;
     if (postalAddress) user.postalAddress = postalAddress;
-    
+
     if (role) user.role = role;
     if (department) user.department = department;
     if (status) user.status = status;
@@ -155,7 +155,7 @@ export const updateUser = async (req: Request, res: Response) => {
   } catch (error) {
     res.status(500).json({ message: "Server error", error });
   }
-};
+}
 
 // Get All Users
 export const getAllUsers = async (req: Request, res: Response) => {

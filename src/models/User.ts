@@ -68,7 +68,48 @@ Admin.init(
     password: {
       type: DataTypes.STRING,
       allowNull: false
-    }
+    },
+
+    primaryContact: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    
+    secondaryContact: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    
+    physicalAddress: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    
+    postalAddress: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    
+    role: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    
+    department: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    
+    status: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    
+    station: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    
   },
   {
     sequelize,
