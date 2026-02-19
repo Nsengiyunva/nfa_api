@@ -498,27 +498,27 @@ export const updateFarmer = async (req: Request, res: Response) => {
 export const deactivateFarmer = async (req: Request, res: Response) => {
   const { id } = req.body;
 
-  try {
-    // const main = await NfaMain.findByPk(id);
-    const main = await NfaMain.findOne({ where: { id: id }});
+  // try {
+  //   // const main = await NfaMain.findByPk(id);
+  //   const main = await NfaMain.findOne({ where: { id: id }});
 
-    // if (!main) {
-    //   return res.status(404).json({ success: false, message: "Farmer not found" });
-    // }
+  //   // if (!main) {
+  //   //   return res.status(404).json({ success: false, message: "Farmer not found" });
+  //   // }
 
-    // // Update main farmer table
-    // await main.update({
-    //   status: "DELETED",
-    //   updated_at: new Date(),
-    // });
-    return res.json({ 
-      success: true, 
-      message: "Farmer removed from the system successfully",
-      result: main 
-    });
-  } catch (error) {
-    return res.status(500).json({ success: false, error });
-  }
+  //   // // Update main farmer table
+  //   // await main.update({
+  //   //   status: "DELETED",
+  //   //   updated_at: new Date(),
+  //   // });
+  //   return res.json({ 
+  //     success: true, 
+  //     message: "Farmer removed from the system successfully",
+  //     result: main 
+  //   });
+  // } catch (error) {
+  //   return res.status(500).json({ success: false, error });
+  // }
 }
 
 
