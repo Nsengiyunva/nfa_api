@@ -120,24 +120,18 @@ export const updateUser = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Check if email is being changed & already exists
-    // if (email && email !== user.email) {
-    //   const emailExists = await Admin.findOne({ where: { email } });
-    //   if (emailExists) {
-    //     return res.status(400).json({ message: "Email already in use" });
-    //   }
-    // }
-
     // Update fields
     if (firstName) user.firstName = firstName;
     if (lastName) user.lastName = lastName;
     if (otherNames) user.otherNames = otherNames;
     if (gender) user.gender = gender;
     if (dob) user.dob = dob;
+
     if (primaryContact) user.primaryContact = primaryContact;
     if (secondaryContact) user.secondaryContact = secondaryContact;
     if (physicalAddress) user.physicalAddress = physicalAddress;
     if (postalAddress) user.postalAddress = postalAddress;
+    
     if (role) user.role = role;
     if (department) user.department = department;
     if (status) user.status = status;
