@@ -6,8 +6,21 @@ export class Admin extends Model {
   public name!: string;
   public email!: string;
   public password!: string;
+  public firstName!: string;
+  public lastName!: string;
+  public otherNames!: string;
+  public gender!: string;
+  public dob!: string;
+  public primaryContact!: string;
+  public secondaryContact!: string;
+  public physicalAddress!: string;
+  public postalAddress!: string;
+  public role!: string;
+  public department!: string;
+  public status!: string;
+  public station!: string;
 }
-
+ 
 Admin.init(
   {
     id: {
@@ -17,6 +30,31 @@ Admin.init(
     },
 
     name: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+
+    firstName: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+
+    lastName: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+
+    otherNames: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+
+    gender: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+
+    dob: {
       type: DataTypes.STRING,
       allowNull: false
     },

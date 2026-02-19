@@ -92,9 +92,7 @@ export const getUserById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
-    const user = await Admin.findByPk(id, {
-      attributes: ["id", "name", "email"], // exclude password
-    });
+    const user = await Admin.findByPk(id);
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -111,7 +109,10 @@ export const getUserById = async (req: Request, res: Response) => {
 export const updateUser = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { name, email, password } = req.body;
+    const { firstName, lastName, otherNames,  gender,  dob,
+      primaryContact, secondaryContact, physicalAddress, postalAddress,
+      role, department, status, station,
+      password } = req.body;
 
     const user = await Admin.findByPk(id);
 
@@ -128,9 +129,19 @@ export const updateUser = async (req: Request, res: Response) => {
     // }
 
     // Update fields
-    if (name) user.name = name;
-    if (email) user.email = email;
-
+    if (firstName) user.firstName = firstName;
+    if (lastName) user.lastName = lastName;
+    if (otherNames) user.otherNames = otherNames;
+    if (gender) user.gender = gender;
+    if (dob) user.dob = dob;
+    if (primaryContact) user.primaryContact = primaryContact;
+    if (secondaryContact) user.secondaryContact = secondaryContact;
+    if (physicalAddress) user.physicalAddress = physicalAddress;
+    if (postalAddress) user.postalAddress = postalAddress;
+    if (role) user.role = role;
+    if (department) user.department = department;
+    if (status) user.status = status;
+    if (station) user.station = station;
     // If password is provided → hash it
     if (password) {
       const hashedPassword = await bcrypt.hash(password, 10);
@@ -156,7 +167,7 @@ export const updateUser = async (req: Request, res: Response) => {
 export const getAllUsers = async (req: Request, res: Response) => {
   try {
     const users = await Admin.findAll({
-      attributes: ["id", "name", "email"], // exclude password
+      // attributes: ["id", "name", "email"], // exclude password
       order: [["id", "DESC"]]
     });
 
