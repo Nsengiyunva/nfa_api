@@ -344,3 +344,121 @@ export const fetchFarmers = async (req: Request, res: Response) => {
   }
 }
 
+export const fetchFarmerByLicenseId = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const { licenseID } = req.query;
+
+    if (!licenseID) {
+      return res.status(400).json({
+        success: false,
+        message: "licenseID query parameter is required"
+      });
+    }
+
+    const query = `
+      SELECT DISTINCT
+        a.physical_address,
+        a.postal_address,
+        a.tin,
+        a.documentID,
+        a.issue_date,
+        a.stage,
+        a.director_comments,
+        a.executive_comments,
+        a.id,
+        d.gender,
+        b.period,
+        a.licenseID,
+        a.updated_at,
+        a.primary_contact,
+        a.farmer_category,
+        a.email_address,
+        a.name,
+        a.farmer_type,
+        a.clientID,
+        b.total_area_planted,
+        b.hectares_allocated,
+        b.rateperha,
+        c.block_number,
+
+        (
+          CASE
+            WHEN c.\`range\` = 'OTHER'
+            THEN c.range_other
+            ELSE c.\`range\`
+          END
+        ) AS \`range\`,
+
+        (
+          CASE
+            WHEN c.sector = 'OTHER'
+            THEN c.sector_other
+            ELSE c.sector
+          END
+        ) AS sector,
+
+        (
+          CASE
+            WHEN c.beat = 'OTHER'
+            THEN c.beat_other
+            ELSE c.beat
+          END
+        ) AS beat,
+
+        (
+          CASE
+            WHEN c.reserve = 'OTHER'
+            THEN c.reserve_other
+            ELSE c.reserve
+          END
+        ) AS reserve
+
+      FROM nfa_main a
+      LEFT JOIN nfa_hectare_details b
+        ON a.id = b.parentID
+
+      LEFT JOIN nfa_block_details c
+        ON a.id = c.parentID
+
+      LEFT JOIN nfa_individual d
+        ON a.id = d.parentID
+
+      WHERE a.status != 'DELETED'
+      AND a.licenseID = :licenseID
+
+      LIMIT 1
+    `;
+
+    const farmer = await sequelize.query(query, {
+      replacements: {
+        licenseID
+      },
+      type: QueryTypes.SELECT
+    });
+
+    if (!farmer || farmer.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Farmer not found"
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      record: farmer[0]
+    });
+
+  } catch (error) {
+    console.error("fetchFarmerByLicenseId Error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch farmer details",
+      error
+    });
+  }
+}
+
