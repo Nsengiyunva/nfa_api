@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from "express";
-import jwt from "jsonwebtoken";
+import jwt, { JwtPayload } from "jsonwebtoken";
 
 export interface AuthRequest extends Request {
-  user?: any;
+  user?: string | JwtPayload;
 }
 
 export const authMiddleware = (
@@ -12,14 +12,25 @@ export const authMiddleware = (
 ) => {
   const token = req.headers.authorization?.split(" ")[1];
 
-  if (!token)
+  if (!token) {
     return res.status(401).json({ message: "Unauthorized. No token provided" });
+  }
+
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    return res.status(500).json({ message: "Server misconfiguration" });
+  }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET as string);
-    req.user = decoded;
+    req.user = jwt.verify(token, secret);
     next();
   } catch (error) {
-    res.status(401).json({ message: "Invalid token" });
+    if (error instanceof jwt.TokenExpiredError) {
+      return res.status(401).json({ message: "Token expired" });
+    }
+    if (error instanceof jwt.JsonWebTokenError) {
+      return res.status(401).json({ message: "Invalid token" });
+    }
+    return res.status(500).json({ message: "Authentication error" });
   }
-};
+}

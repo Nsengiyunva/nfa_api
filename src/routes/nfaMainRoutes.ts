@@ -1,4 +1,5 @@
 import { Router, Request, Response } from "express";
+import { authMiddleware } from "../middleware/authMiddleware";
 import {
   NfaMain,
   NfaIndividual,
@@ -12,6 +13,8 @@ import { getDashboard, fetchFarmers } from "../controllers/farmerController";
 import { getFarmer, createFarmer, updateFarmer } from "../controllers/nfaMainController";
 
 const router = Router();
+
+router.use( authMiddleware );
 
 // GET all farmers with related data
 router.get("/", async (req: Request, res: Response) => {

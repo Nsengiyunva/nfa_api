@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { Farmer, NfaBlockDetail, NfaMain, NfaGroupMember, NfaHectareDetail, NfaIndividual, NfaNok, NfaSpouseDetail  } from "../models";
 import { sequelize } from "../models";
-import { literal } from "sequelize";
+import { QueryTypes } from "sequelize";
 // Create
 export const createFarmer = async (req: Request, res: Response) => {
   try {
@@ -10,17 +10,39 @@ export const createFarmer = async (req: Request, res: Response) => {
   } catch (error) {
     res.status(500).json({ success: false, error });
   }
-};
+}
 
 // Get all
-export const getFarmers = async (_req: Request, res: Response) => {
+export const getFarmers = async (req: Request, res: Response) => {
   try {
-    const farmers = await Farmer.findAll();
-    res.json({ success: true, farmers });
+    const page = Math.max(1, parseInt(req.query.page as string) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 50));
+    const offset = (page - 1) * limit;
+
+    const { count, rows: farmers } = await Farmer.findAndCountAll({
+      limit,
+      offset,
+      order: [["id", "DESC"]]
+    });
+
+    const totalPages = Math.ceil(count / limit);
+
+    res.json({
+      success: true,
+      farmers,
+      pagination: {
+        total: count,
+        page,
+        limit,
+        totalPages,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1
+      }
+    });
   } catch (error) {
     res.status(500).json({ success: false, error });
   }
-};
+}
 
 // Get one
 export const getFarmerById = async (req: Request, res: Response) => {
@@ -35,7 +57,7 @@ export const getFarmerById = async (req: Request, res: Response) => {
   } catch (error) {
     res.status(500).json({ success: false, error });
   }
-};
+}
 
 // Update
 export const updateFarmer = async (req: Request, res: Response) => {
@@ -52,7 +74,7 @@ export const updateFarmer = async (req: Request, res: Response) => {
   } catch (error) {
     res.status(500).json({ success: false, error });
   }
-};
+}
 
 
 export const getDashboard = async (_req: Request, res: Response) => {
@@ -107,10 +129,23 @@ export const getDashboard = async (_req: Request, res: Response) => {
     console.error("Dashboard Error:", error);
     res.status(500).json({ success: false, error });
   }
-};
+}
 
-export const fetchFarmers = async (_req: Request, res: Response) => {
+export const fetchFarmers = async (req: Request, res: Response) => {
   try {
+    const page = Math.max(1, parseInt(req.query.page as string) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 50));
+    const offset = (page - 1) * limit;
+
+    const countQuery = `
+      SELECT COUNT(DISTINCT a.id) as total
+      FROM nfa_main a
+      LEFT JOIN nfa_hectare_details b ON a.id = b.parentID
+      LEFT JOIN nfa_block_details c ON a.id = c.parentID
+      LEFT JOIN nfa_individual d ON a.id = d.parentID
+      WHERE a.status != "DELETED"
+    `;
+
     const query = `
       SELECT DISTINCT
         a.physical_address,
@@ -146,18 +181,36 @@ export const fetchFarmers = async (_req: Request, res: Response) => {
       LEFT JOIN nfa_individual d ON a.id = d.parentID
       WHERE a.status != "DELETED"
       ORDER BY a.id DESC
+      LIMIT :limit OFFSET :offset
     `;
 
-    const [farmers] = await sequelize.query(query);
+    const [[{ total }], [farmers]] = await Promise.all([
+      sequelize.query(countQuery, { type: QueryTypes.SELECT }),
+      sequelize.query(query, {
+        replacements: { limit, offset },
+        type: QueryTypes.SELECT
+      })
+    ]);
+
+    const totalRecords = Number(total);
+    const totalPages = Math.ceil(totalRecords / limit);
 
     return res.json({
       success: true,
-      records: farmers
+      records: farmers,
+      pagination: {
+        total: totalRecords,
+        page,
+        limit,
+        totalPages,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1
+      }
     });
 
   } catch (error) {
     console.error("fetchAllFarmers Error:", error);
     return res.status(500).json({ success: false, error });
   }
-};
+}
 
