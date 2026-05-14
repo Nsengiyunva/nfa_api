@@ -36,27 +36,28 @@ Admin.init(
 
     firstName: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: true
     },
 
     lastName: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: true
     },
 
     otherNames: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: true,
+      defaultValue: ""
     },
 
     gender: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: true
     },
 
     dob: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: true
     },
 
     email: {
