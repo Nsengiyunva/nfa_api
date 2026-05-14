@@ -131,19 +131,106 @@ export const getDashboard = async (_req: Request, res: Response) => {
   }
 }
 
+// export const fetchFarmers = async (req: Request, res: Response) => {
+//   try {
+//     const page = Math.max(1, parseInt(req.query.page as string) || 1);
+//     const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 50));
+//     const offset = (page - 1) * limit;
+
+//     const countQuery = `
+//       SELECT COUNT(DISTINCT a.id) as total
+//       FROM nfa_main a
+//       LEFT JOIN nfa_hectare_details b ON a.id = b.parentID
+//       LEFT JOIN nfa_block_details c ON a.id = c.parentID
+//       LEFT JOIN nfa_individual d ON a.id = d.parentID
+//       WHERE a.status != "DELETED"
+//     `;
+
+//     const query = `
+//       SELECT DISTINCT
+//         a.physical_address,
+//         a.postal_address,
+//         a.tin,
+//         a.documentID,
+//         a.issue_date,
+//         a.stage,
+//         a.director_comments,
+//         a.executive_comments,
+//         a.id,
+//         d.gender,
+//         b.period,
+//         a.licenseID,
+//         a.updated_at,
+//         a.primary_contact,
+//         a.farmer_category,
+//         a.email_address,
+//         a.name,
+//         a.farmer_type,
+//         a.clientID,
+//         b.total_area_planted,
+//         b.hectares_allocated,
+//         b.rateperha,
+//         c.block_number,
+//         (CASE WHEN c.\`range\` = 'OTHER' THEN c.range_other ELSE c.\`range\` END) AS \`range\`,
+//         (CASE WHEN c.sector = 'OTHER' THEN c.sector_other ELSE c.sector END) AS sector,
+//         (CASE WHEN c.beat = 'OTHER' THEN c.beat_other ELSE c.beat END) AS beat,
+//         (CASE WHEN c.reserve = 'OTHER' THEN c.reserve_other ELSE c.reserve END) AS reserve
+//       FROM nfa_main a
+//       LEFT JOIN nfa_hectare_details b ON a.id = b.parentID
+//       LEFT JOIN nfa_block_details c ON a.id = c.parentID
+//       LEFT JOIN nfa_individual d ON a.id = d.parentID
+//       WHERE a.status != "DELETED"
+//       ORDER BY a.id DESC
+//       LIMIT :limit OFFSET :offset
+//     `;
+
+//     const [[{ total }], [farmers]] = await Promise.all([
+//       sequelize.query(countQuery, { type: QueryTypes.SELECT }),
+//       sequelize.query(query, {
+//         replacements: { limit, offset },
+//         type: QueryTypes.SELECT
+//       })
+//     ]);
+
+//     const totalRecords = Number(total);
+//     const totalPages = Math.ceil(totalRecords / limit);
+
+//     return res.json({
+//       success: true,
+//       records: farmers,
+//       pagination: {
+//         total: totalRecords,
+//         page,
+//         limit,
+//         totalPages,
+//         hasNextPage: page < totalPages,
+//         hasPrevPage: page > 1
+//       }
+//     });
+
+//   } catch (error) {
+//     console.error("fetchAllFarmers Error:", error);
+//     return res.status(500).json({ success: false, error });
+//   }
+// }
+
 export const fetchFarmers = async (req: Request, res: Response) => {
   try {
     const page = Math.max(1, parseInt(req.query.page as string) || 1);
-    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 50));
+    const limit = Math.min(
+      100,
+      Math.max(1, parseInt(req.query.limit as string) || 50)
+    );
+
     const offset = (page - 1) * limit;
 
     const countQuery = `
-      SELECT COUNT(DISTINCT a.id) as total
+      SELECT COUNT(DISTINCT a.id) AS total
       FROM nfa_main a
       LEFT JOIN nfa_hectare_details b ON a.id = b.parentID
       LEFT JOIN nfa_block_details c ON a.id = c.parentID
       LEFT JOIN nfa_individual d ON a.id = d.parentID
-      WHERE a.status != "DELETED"
+      WHERE a.status != 'DELETED'
     `;
 
     const query = `
@@ -171,33 +258,71 @@ export const fetchFarmers = async (req: Request, res: Response) => {
         b.hectares_allocated,
         b.rateperha,
         c.block_number,
-        (CASE WHEN c.\`range\` = 'OTHER' THEN c.range_other ELSE c.\`range\` END) AS \`range\`,
-        (CASE WHEN c.sector = 'OTHER' THEN c.sector_other ELSE c.sector END) AS sector,
-        (CASE WHEN c.beat = 'OTHER' THEN c.beat_other ELSE c.beat END) AS beat,
-        (CASE WHEN c.reserve = 'OTHER' THEN c.reserve_other ELSE c.reserve END) AS reserve
+
+        (
+          CASE
+            WHEN c.\`range\` = 'OTHER'
+            THEN c.range_other
+            ELSE c.\`range\`
+          END
+        ) AS \`range\`,
+
+        (
+          CASE
+            WHEN c.sector = 'OTHER'
+            THEN c.sector_other
+            ELSE c.sector
+          END
+        ) AS sector,
+
+        (
+          CASE
+            WHEN c.beat = 'OTHER'
+            THEN c.beat_other
+            ELSE c.beat
+          END
+        ) AS beat,
+
+        (
+          CASE
+            WHEN c.reserve = 'OTHER'
+            THEN c.reserve_other
+            ELSE c.reserve
+          END
+        ) AS reserve
+
       FROM nfa_main a
       LEFT JOIN nfa_hectare_details b ON a.id = b.parentID
       LEFT JOIN nfa_block_details c ON a.id = c.parentID
       LEFT JOIN nfa_individual d ON a.id = d.parentID
-      WHERE a.status != "DELETED"
+
+      WHERE a.status != 'DELETED'
+
       ORDER BY a.id DESC
       LIMIT :limit OFFSET :offset
     `;
 
-    const [[{ total }], [farmers]] = await Promise.all([
-      sequelize.query(countQuery, { type: QueryTypes.SELECT }),
+    const [countResult, farmers] = await Promise.all([
+      sequelize.query<{ total: number }>(countQuery, {
+        type: QueryTypes.SELECT
+      }),
+
       sequelize.query(query, {
-        replacements: { limit, offset },
+        replacements: {
+          limit,
+          offset
+        },
         type: QueryTypes.SELECT
       })
     ]);
 
-    const totalRecords = Number(total);
+    const totalRecords = Number(countResult[0]?.total || 0);
     const totalPages = Math.ceil(totalRecords / limit);
 
-    return res.json({
+    return res.status(200).json({
       success: true,
       records: farmers,
+
       pagination: {
         total: totalRecords,
         page,
@@ -209,8 +334,13 @@ export const fetchFarmers = async (req: Request, res: Response) => {
     });
 
   } catch (error) {
-    console.error("fetchAllFarmers Error:", error);
-    return res.status(500).json({ success: false, error });
+    console.error("fetchFarmers Error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch farmers",
+      error
+    });
   }
 }
 
