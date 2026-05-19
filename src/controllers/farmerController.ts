@@ -149,8 +149,31 @@ export const fetchFarmers = async (req: Request, res: Response) => {
     const replacements: Record<string, any> = {};
 
     if (search) {
-      conditions.push(`(a.name LIKE :search OR a.email_address LIKE :search OR a.primary_contact LIKE :search OR a.licenseID LIKE :search)`);
-      replacements.search = `%${search}%`;
+      const isNumeric = /^\d+$/.test(search);
+
+      if (isNumeric) {
+        // Numeric input: match licenseID exactly or as prefix to avoid
+        // false positives from phone numbers containing the digits.
+        // Still fuzzy-match name and primary_contact as a fallback.
+        conditions.push(`(
+          a.licenseID = :exactSearch
+          OR a.licenseID LIKE :prefixSearch
+          OR a.primary_contact LIKE :search
+          OR a.name LIKE :search
+        )`);
+        replacements.exactSearch = search;
+        replacements.prefixSearch = `${search}%`;
+        replacements.search = `%${search}%`;
+      } else {
+        // Text input: search name and email only — exclude licenseID to
+        // avoid accidental digit matches inside phone numbers.
+        conditions.push(`(
+          a.name LIKE :search
+          OR a.email_address LIKE :search
+          OR a.primary_contact LIKE :search
+        )`);
+        replacements.search = `%${search}%`;
+      }
     }
 
     if (category) {
@@ -216,7 +239,14 @@ export const fetchFarmers = async (req: Request, res: Response) => {
     return res.status(200).json({
       success: true,
       records: farmers,
-      pagination: { total: totalRecords, page, limit, totalPages, hasNextPage: page < totalPages, hasPrevPage: page > 1 },
+      pagination: {
+        total: totalRecords,
+        page,
+        limit,
+        totalPages,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1,
+      },
     });
 
   } catch (error) {
