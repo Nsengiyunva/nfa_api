@@ -131,14 +131,134 @@ export const getDashboard = async (_req: Request, res: Response) => {
   }
 }
 
+// export const fetchFarmers = async (req: Request, res: Response) => {
+//   try {
+//     // const hasPagination = req.query.page !== undefined || req.query.limit !== undefined;
+
+//     const hasPagination = true;
+
+//     const page = Math.max(1, parseInt(req.query.page as string) || 1);
+//     const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 50));
+//     const offset = (page - 1) * limit;
+
+//     const search = (req.query.search as string)?.trim() || "";
+//     const start_date = req.query.start_date as string || "";
+//     const end_date = req.query.end_date as string || "";
+//     const category = req.query.category as string || ""; // OFFERED | LICENSED | REGULARIZED
+
+//     // Build dynamic WHERE clauses
+//     const conditions: string[] = [`a.status != 'DELETED'`];
+//     const replacements: Record<string, any> = {};
+
+//     if (search) {
+//       const isNumeric = /^\d+$/.test(search);
+
+//       if (isNumeric) {
+//         conditions.push(`(
+//           a.licenseID = :exactSearch
+//           OR a.licenseID LIKE :prefixSearch
+//           OR a.primary_contact LIKE :search
+//           OR a.name LIKE :search
+//         )`);
+//         replacements.exactSearch = search;
+//         replacements.prefixSearch = `${search}%`;
+//         replacements.search = `%${search}%`;
+//       } else {
+//         conditions.push(`(
+//           a.name LIKE :search
+//           OR a.email_address LIKE :search
+//           OR a.primary_contact LIKE :search
+//         )`);
+//         replacements.search = `%${search}%`;
+//       }
+//     }
+
+//     if (category) {
+//       conditions.push(`a.farmer_category = :category`);
+//       replacements.category = category.toUpperCase();
+//     }
+
+//     if (start_date && end_date) {
+//       conditions.push(`DATE(a.updated_at) BETWEEN :start_date AND :end_date`);
+//       replacements.start_date = start_date;
+//       replacements.end_date = end_date;
+//     }
+
+//     const WHERE = `WHERE ${conditions.join(" AND ")}`;
+
+//     const baseQuery = `
+//       SELECT DISTINCT
+//         a.physical_address, a.postal_address, a.tin, a.documentID, a.issue_date,
+//         a.stage, a.director_comments, a.executive_comments, a.id, d.gender,
+//         b.period, a.licenseID, a.updated_at, a.primary_contact, a.farmer_category,
+//         a.email_address, a.name, a.farmer_type, a.clientID, b.total_area_planted,
+//         b.hectares_allocated, b.rateperha, c.block_number,
+//         (CASE WHEN c.\`range\` = 'OTHER' THEN c.range_other ELSE c.\`range\` END) AS \`range\`,
+//         (CASE WHEN c.sector = 'OTHER' THEN c.sector_other ELSE c.sector END) AS sector,
+//         (CASE WHEN c.beat = 'OTHER' THEN c.beat_other ELSE c.beat END) AS beat,
+//         (CASE WHEN c.reserve = 'OTHER' THEN c.reserve_other ELSE c.reserve END) AS reserve
+//       FROM nfa_main a
+//       LEFT JOIN nfa_hectare_details b ON a.id = b.parentID
+//       LEFT JOIN nfa_block_details c ON a.id = c.parentID
+//       LEFT JOIN nfa_individual d ON a.id = d.parentID
+//       ${WHERE}
+//       ORDER BY a.id DESC
+//     `;
+
+//     if (!hasPagination) {
+//       const farmers = await sequelize.query(baseQuery, {
+//         replacements,
+//         type: QueryTypes.SELECT,
+//       });
+//       return res.status(200).json({ success: true, records: farmers, pagination: null });
+//     }
+
+//     const countQuery = `
+//       SELECT COUNT(DISTINCT a.id) AS total
+//       FROM nfa_main a
+//       LEFT JOIN nfa_hectare_details b ON a.id = b.parentID
+//       LEFT JOIN nfa_block_details c ON a.id = c.parentID
+//       LEFT JOIN nfa_individual d ON a.id = d.parentID
+//       ${WHERE}
+//     `;
+
+//     const [countResult, farmers] = await Promise.all([
+//       sequelize.query<{ total: number }>(countQuery, { replacements, type: QueryTypes.SELECT }),
+//       sequelize.query(`${baseQuery} LIMIT :limit OFFSET :offset`, {
+//         replacements: { ...replacements, limit, offset },
+//         type: QueryTypes.SELECT,
+//       }),
+//     ]);
+
+//     const totalRecords = Number(countResult[0]?.total || 0);
+//     const totalPages = Math.ceil(totalRecords / limit);
+
+//     return res.status(200).json({
+//       success: true,
+//       records: farmers,
+//       pagination: {
+//         total: totalRecords,
+//         page,
+//         limit,
+//         totalPages,
+//         hasNextPage: page < totalPages,
+//         hasPrevPage: page > 1,
+//       },
+//     });
+
+//   } catch (error) {
+//     return res.status(500).json({ success: false, message: "Failed to fetch farmers", error });
+//   }
+// }
+
+
 export const fetchFarmers = async (req: Request, res: Response) => {
   try {
-    // const hasPagination = req.query.page !== undefined || req.query.limit !== undefined;
-
     const hasPagination = true;
 
     const page = Math.max(1, parseInt(req.query.page as string) || 1);
-    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 50));
+    // FIX: default limit changed from 50 to 10 to match frontend LIMIT constant
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 10));
     const offset = (page - 1) * limit;
 
     const search = (req.query.search as string)?.trim() || "";
@@ -154,9 +274,6 @@ export const fetchFarmers = async (req: Request, res: Response) => {
       const isNumeric = /^\d+$/.test(search);
 
       if (isNumeric) {
-        // Numeric input: match licenseID exactly or as prefix to avoid
-        // false positives from phone numbers containing the digits.
-        // Still fuzzy-match name and primary_contact as a fallback.
         conditions.push(`(
           a.licenseID = :exactSearch
           OR a.licenseID LIKE :prefixSearch
@@ -167,8 +284,6 @@ export const fetchFarmers = async (req: Request, res: Response) => {
         replacements.prefixSearch = `${search}%`;
         replacements.search = `%${search}%`;
       } else {
-        // Text input: search name and email only — exclude licenseID to
-        // avoid accidental digit matches inside phone numbers.
         conditions.push(`(
           a.name LIKE :search
           OR a.email_address LIKE :search
@@ -255,109 +370,6 @@ export const fetchFarmers = async (req: Request, res: Response) => {
     return res.status(500).json({ success: false, message: "Failed to fetch farmers", error });
   }
 }
-
-// export const fetchFarmers = async (req: Request, res: Response) => {
-//   try {
-//     const hasPagination = req.query.page !== undefined || req.query.limit !== undefined;
-
-//     const baseQuery = `
-//       SELECT DISTINCT
-//         a.physical_address,
-//         a.postal_address,
-//         a.tin,
-//         a.documentID,
-//         a.issue_date,
-//         a.stage,
-//         a.director_comments,
-//         a.executive_comments,
-//         a.id,
-//         d.gender,
-//         b.period,
-//         a.licenseID,
-//         a.updated_at,
-//         a.primary_contact,
-//         a.farmer_category,
-//         a.email_address,
-//         a.name,
-//         a.farmer_type,
-//         a.clientID,
-//         b.total_area_planted,
-//         b.hectares_allocated,
-//         b.rateperha,
-//         c.block_number,
-
-//         (CASE WHEN c.\`range\` = 'OTHER' THEN c.range_other ELSE c.\`range\` END) AS \`range\`,
-//         (CASE WHEN c.sector = 'OTHER' THEN c.sector_other ELSE c.sector END) AS sector,
-//         (CASE WHEN c.beat = 'OTHER' THEN c.beat_other ELSE c.beat END) AS beat,
-//         (CASE WHEN c.reserve = 'OTHER' THEN c.reserve_other ELSE c.reserve END) AS reserve
-
-//       FROM nfa_main a
-//       LEFT JOIN nfa_hectare_details b ON a.id = b.parentID
-//       LEFT JOIN nfa_block_details c ON a.id = c.parentID
-//       LEFT JOIN nfa_individual d ON a.id = d.parentID
-//       WHERE a.status != 'DELETED'
-//       ORDER BY a.id DESC
-//     `;
-
-//     // ── No pagination → return everything ────────────────────────────────────
-//     if (!hasPagination) {
-//       const farmers = await sequelize.query(baseQuery, {
-//         type: QueryTypes.SELECT,
-//       });
-
-//       return res.status(200).json({
-//         success: true,
-//         records: farmers,
-//         pagination: null,
-//       });
-//     }
-
-//     // ── Paginated ─────────────────────────────────────────────────────────────
-//     const page = Math.max(1, parseInt(req.query.page as string) || 1);
-//     const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 50));
-//     const offset = (page - 1) * limit;
-
-//     const countQuery = `
-//       SELECT COUNT(DISTINCT a.id) AS total
-//       FROM nfa_main a
-//       LEFT JOIN nfa_hectare_details b ON a.id = b.parentID
-//       LEFT JOIN nfa_block_details c ON a.id = c.parentID
-//       LEFT JOIN nfa_individual d ON a.id = d.parentID
-//       WHERE a.status != 'DELETED'
-//     `;
-
-//     const [countResult, farmers] = await Promise.all([
-//       sequelize.query<{ total: number }>(countQuery, { type: QueryTypes.SELECT }),
-//       sequelize.query(`${baseQuery} LIMIT :limit OFFSET :offset`, {
-//         replacements: { limit, offset },
-//         type: QueryTypes.SELECT,
-//       }),
-//     ]);
-
-//     const totalRecords = Number(countResult[0]?.total || 0);
-//     const totalPages = Math.ceil(totalRecords / limit);
-
-//     return res.status(200).json({
-//       success: true,
-//       records: farmers,
-//       pagination: {
-//         total: totalRecords,
-//         page,
-//         limit,
-//         totalPages,
-//         hasNextPage: page < totalPages,
-//         hasPrevPage: page > 1,
-//       },
-//     });
-
-//   } catch (error) {
-//     return res.status(500).json({
-//       success: false,
-//       message: "Failed to fetch farmers",
-//       error,
-//     });
-//   }
-// };
 
 export const fetchFarmerByLicenseId = async (
   req: Request,
