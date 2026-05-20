@@ -256,8 +256,6 @@ export const fetchFarmers = async (req: Request, res: Response) => {
   }
 }
 
-
-
 // export const fetchFarmers = async (req: Request, res: Response) => {
 //   try {
 //     const hasPagination = req.query.page !== undefined || req.query.limit !== undefined;
