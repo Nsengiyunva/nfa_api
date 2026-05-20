@@ -133,7 +133,9 @@ export const getDashboard = async (_req: Request, res: Response) => {
 
 export const fetchFarmers = async (req: Request, res: Response) => {
   try {
-    const hasPagination = req.query.page !== undefined || req.query.limit !== undefined;
+    // const hasPagination = req.query.page !== undefined || req.query.limit !== undefined;
+
+    const hasPagination = true;
 
     const page = Math.max(1, parseInt(req.query.page as string) || 1);
     const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 50));
