@@ -84,10 +84,10 @@ const router = Router();
 router.use(authMiddleware);
 
 // ── Static / exact routes FIRST (before any param routes) ─────────────────────
-router.get("/test1/", exportFarmersCSV)          // → /api/nfa/farmer/export ✅
-router.get("/farmer/details", fetchFarmerByLicenseId) // → /api/nfa/farmer/details
-router.get("/stats/dashboard", getDashboard)          // → /api/nfa/stats/dashboard
-router.get("/all/farmers", fetchFarmers)              // → /api/nfa/all/farmers
+router.get("/export_farmers/", exportFarmersCSV)          
+router.get("/farmer/details", fetchFarmerByLicenseId) 
+router.get("/stats/dashboard", getDashboard)         
+router.get("/all/farmers", fetchFarmers) 
 
 // ── CRUD ───────────────────────────────────────────────────────────────────────
 router.get("/", async (req: Request, res: Response) => {
