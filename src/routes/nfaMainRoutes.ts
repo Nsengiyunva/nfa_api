@@ -9,7 +9,7 @@ import {
   NfaSpouseDetail,
   NfaNok
 } from "../models";
-import { getDashboard, fetchFarmers,fetchFarmerByLicenseId } from "../controllers/farmerController";
+import { getDashboard, fetchFarmers,fetchFarmerByLicenseId, exportFarmers } from "../controllers/farmerController";
 import { getFarmer, createFarmer, updateFarmer } from "../controllers/nfaMainController";
 
 const router = Router();
@@ -58,5 +58,6 @@ router.get("/stats/dashboard", getDashboard);
 router.get("/all/farmers", fetchFarmers );
 router.put("/farmer/:id", updateFarmer);
 router.get("/farmer/details", fetchFarmerByLicenseId);
+router.get("/farmers/export", exportFarmers) 
 
 export default router;

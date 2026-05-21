@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { Farmer, NfaBlockDetail, NfaMain, NfaGroupMember, NfaHectareDetail, NfaIndividual, NfaNok, NfaSpouseDetail  } from "../models";
 import { sequelize } from "../models";
 import { QueryTypes } from "sequelize";
+import { Parser } from 'json2csv'
 // Create
 export const createFarmer = async (req: Request, res: Response) => {
   try {
@@ -130,127 +131,6 @@ export const getDashboard = async (_req: Request, res: Response) => {
     res.status(500).json({ success: false, error });
   }
 }
-
-// export const fetchFarmers = async (req: Request, res: Response) => {
-//   try {
-//     // const hasPagination = req.query.page !== undefined || req.query.limit !== undefined;
-
-//     const hasPagination = true;
-
-//     const page = Math.max(1, parseInt(req.query.page as string) || 1);
-//     const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 50));
-//     const offset = (page - 1) * limit;
-
-//     const search = (req.query.search as string)?.trim() || "";
-//     const start_date = req.query.start_date as string || "";
-//     const end_date = req.query.end_date as string || "";
-//     const category = req.query.category as string || ""; // OFFERED | LICENSED | REGULARIZED
-
-//     // Build dynamic WHERE clauses
-//     const conditions: string[] = [`a.status != 'DELETED'`];
-//     const replacements: Record<string, any> = {};
-
-//     if (search) {
-//       const isNumeric = /^\d+$/.test(search);
-
-//       if (isNumeric) {
-//         conditions.push(`(
-//           a.licenseID = :exactSearch
-//           OR a.licenseID LIKE :prefixSearch
-//           OR a.primary_contact LIKE :search
-//           OR a.name LIKE :search
-//         )`);
-//         replacements.exactSearch = search;
-//         replacements.prefixSearch = `${search}%`;
-//         replacements.search = `%${search}%`;
-//       } else {
-//         conditions.push(`(
-//           a.name LIKE :search
-//           OR a.email_address LIKE :search
-//           OR a.primary_contact LIKE :search
-//         )`);
-//         replacements.search = `%${search}%`;
-//       }
-//     }
-
-//     if (category) {
-//       conditions.push(`a.farmer_category = :category`);
-//       replacements.category = category.toUpperCase();
-//     }
-
-//     if (start_date && end_date) {
-//       conditions.push(`DATE(a.updated_at) BETWEEN :start_date AND :end_date`);
-//       replacements.start_date = start_date;
-//       replacements.end_date = end_date;
-//     }
-
-//     const WHERE = `WHERE ${conditions.join(" AND ")}`;
-
-//     const baseQuery = `
-//       SELECT DISTINCT
-//         a.physical_address, a.postal_address, a.tin, a.documentID, a.issue_date,
-//         a.stage, a.director_comments, a.executive_comments, a.id, d.gender,
-//         b.period, a.licenseID, a.updated_at, a.primary_contact, a.farmer_category,
-//         a.email_address, a.name, a.farmer_type, a.clientID, b.total_area_planted,
-//         b.hectares_allocated, b.rateperha, c.block_number,
-//         (CASE WHEN c.\`range\` = 'OTHER' THEN c.range_other ELSE c.\`range\` END) AS \`range\`,
-//         (CASE WHEN c.sector = 'OTHER' THEN c.sector_other ELSE c.sector END) AS sector,
-//         (CASE WHEN c.beat = 'OTHER' THEN c.beat_other ELSE c.beat END) AS beat,
-//         (CASE WHEN c.reserve = 'OTHER' THEN c.reserve_other ELSE c.reserve END) AS reserve
-//       FROM nfa_main a
-//       LEFT JOIN nfa_hectare_details b ON a.id = b.parentID
-//       LEFT JOIN nfa_block_details c ON a.id = c.parentID
-//       LEFT JOIN nfa_individual d ON a.id = d.parentID
-//       ${WHERE}
-//       ORDER BY a.id DESC
-//     `;
-
-//     if (!hasPagination) {
-//       const farmers = await sequelize.query(baseQuery, {
-//         replacements,
-//         type: QueryTypes.SELECT,
-//       });
-//       return res.status(200).json({ success: true, records: farmers, pagination: null });
-//     }
-
-//     const countQuery = `
-//       SELECT COUNT(DISTINCT a.id) AS total
-//       FROM nfa_main a
-//       LEFT JOIN nfa_hectare_details b ON a.id = b.parentID
-//       LEFT JOIN nfa_block_details c ON a.id = c.parentID
-//       LEFT JOIN nfa_individual d ON a.id = d.parentID
-//       ${WHERE}
-//     `;
-
-//     const [countResult, farmers] = await Promise.all([
-//       sequelize.query<{ total: number }>(countQuery, { replacements, type: QueryTypes.SELECT }),
-//       sequelize.query(`${baseQuery} LIMIT :limit OFFSET :offset`, {
-//         replacements: { ...replacements, limit, offset },
-//         type: QueryTypes.SELECT,
-//       }),
-//     ]);
-
-//     const totalRecords = Number(countResult[0]?.total || 0);
-//     const totalPages = Math.ceil(totalRecords / limit);
-
-//     return res.status(200).json({
-//       success: true,
-//       records: farmers,
-//       pagination: {
-//         total: totalRecords,
-//         page,
-//         limit,
-//         totalPages,
-//         hasNextPage: page < totalPages,
-//         hasPrevPage: page > 1,
-//       },
-//     });
-
-//   } catch (error) {
-//     return res.status(500).json({ success: false, message: "Failed to fetch farmers", error });
-//   }
-// }
-
 
 export const fetchFarmers = async (req: Request, res: Response) => {
   try {
@@ -489,3 +369,150 @@ export const fetchFarmerByLicenseId = async (
   }
 }
 
+
+export const exportFarmers = async (req: Request, res: Response) => {
+  try {
+    const search     = (req.query.search as string)?.trim() || ""
+    const start_date = (req.query.start_date as string) || ""
+    const end_date   = (req.query.end_date as string) || ""
+    const category   = (req.query.category as string) || ""
+    const format     = (req.query.format as string) || "json"
+
+    // ── Build WHERE ───────────────────────────────────────────────────────────
+    const conditions: string[] = [`a.status != 'DELETED'`]
+    const replacements: Record<string, any> = {}
+
+    if (search) {
+      const isNumeric = /^\d+$/.test(search)
+      if (isNumeric) {
+        conditions.push(`(
+          a.licenseID = :exactSearch
+          OR a.licenseID LIKE :prefixSearch
+          OR a.primary_contact LIKE :search
+          OR a.name LIKE :search
+        )`)
+        replacements.exactSearch  = search
+        replacements.prefixSearch = `${search}%`
+        replacements.search       = `%${search}%`
+      } else {
+        conditions.push(`(
+          a.name LIKE :search
+          OR a.email_address LIKE :search
+          OR a.primary_contact LIKE :search
+        )`)
+        replacements.search = `%${search}%`
+      }
+    }
+
+    if (category) {
+      conditions.push(`a.farmer_category = :category`)
+      replacements.category = category.toUpperCase()
+    }
+
+    if (start_date && end_date) {
+      conditions.push(`DATE(a.updated_at) BETWEEN :start_date AND :end_date`)
+      replacements.start_date = start_date
+      replacements.end_date   = end_date
+    }
+
+    const WHERE = `WHERE ${conditions.join(" AND ")}`
+
+    // ── Query (no LIMIT / OFFSET) ─────────────────────────────────────────────
+    const query = `
+      SELECT DISTINCT
+        a.id,
+        a.documentID,
+        a.licenseID,
+        a.issue_date,
+        b.period,
+        a.expiry_date,
+        a.updated_at                                              AS date,
+        a.primary_contact,
+        a.farmer_category,
+        a.email_address,
+        a.name,
+        a.farmer_type,
+        a.status,
+        a.clientID,
+        b.hectares_allocated,
+        b.total_area_planted,
+        b.rateperha,
+        c.block_number,
+        (CASE WHEN c.\`range\`   = 'OTHER' THEN c.range_other   ELSE c.\`range\`   END) AS \`range\`,
+        (CASE WHEN c.sector      = 'OTHER' THEN c.sector_other  ELSE c.sector      END) AS sector,
+        (CASE WHEN c.beat        = 'OTHER' THEN c.beat_other    ELSE c.beat        END) AS beat,
+        (CASE WHEN c.reserve     = 'OTHER' THEN c.reserve_other ELSE c.reserve     END) AS reserve
+      FROM nfa_main a
+      LEFT JOIN nfa_hectare_details b ON a.id = b.parentID
+      LEFT JOIN nfa_block_details   c ON a.id = c.parentID
+      LEFT JOIN nfa_individual      d ON a.id = d.parentID
+      ${WHERE}
+      ORDER BY a.id DESC
+    `
+
+    const records = await sequelize.query<Record<string, any>>(query, {
+      replacements,
+      type: QueryTypes.SELECT,
+    })
+
+    if (records.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No records found matching the given filters.",
+      })
+    }
+
+    // ── Stream as CSV ─────────────────────────────────────────────────────────
+    if (format === "csv") {
+      const fields = [
+        { label: "ID",                  value: "id"                },
+        { label: "Document ID",         value: "documentID"        },
+        { label: "License ID",          value: "licenseID"         },
+        { label: "Issue Date",          value: "issue_date"        },
+        { label: "Period",              value: "period"            },
+        { label: "Expiry Date",         value: "expiry_date"       },
+        { label: "Date",                value: "date"              },
+        { label: "Primary Contact",     value: "primary_contact"   },
+        { label: "Farmer Category",     value: "farmer_category"   },
+        { label: "Email Address",       value: "email_address"     },
+        { label: "Farmer Name",         value: "name"              },
+        { label: "Farmer Type",         value: "farmer_type"       },
+        { label: "Farmer Status",       value: "status"            },
+        { label: "Client ID",           value: "clientID"          },
+        { label: "Hectares Allocated",  value: "hectares_allocated"},
+        { label: "Total Area Planted",  value: "total_area_planted"},
+        { label: "Management Area",     value: "range"             },
+        { label: "Sector",              value: "sector"            },
+        { label: "Beat",               value: "beat"              },
+        { label: "Block Number",        value: "block_number"      },
+        { label: "Forest Reserve",      value: "reserve"           },
+        { label: "Rate Per Hectare",    value: "rateperha"         },
+      ]
+
+      const parser = new Parser({ fields })
+      const csv    = parser.parse(records)
+
+      const filename = `Farmer_Licenses_${new Date().toISOString().slice(0, 10)}.csv`
+
+      res.setHeader("Content-Type", "text/csv")
+      res.setHeader("Content-Disposition", `attachment; filename="${filename}"`)
+      res.setHeader("Cache-Control", "no-store")
+      return res.status(200).send(csv)
+    }
+
+    // ── Default: return JSON ──────────────────────────────────────────────────
+    return res.status(200).json({
+      success: true,
+      total:   records.length,
+      records,
+    })
+
+  } catch (error) {
+    console.error("[exportFarmers]", error)
+    return res.status(500).json({
+      success: false,
+      message: "Export failed. Please try again later.",
+      error,
+    })
+  }
+}
