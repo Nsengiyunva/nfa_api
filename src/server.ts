@@ -20,6 +20,7 @@ app.use("/api/farmers", farmerRoutes);
 app.use("/api/nfa", nfaMainRoutes);
 
 
+
 connectDB();
 sequelize.sync().then(() => console.log("Tables synced..."));
 
