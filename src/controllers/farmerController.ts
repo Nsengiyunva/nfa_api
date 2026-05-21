@@ -370,7 +370,7 @@ export const fetchFarmerByLicenseId = async (
 }
 
 
-export const exportFarmers = async (req: Request, res: Response) => {
+export const exportFarmersCSV = async (req: Request, res: Response) => {
   try {
     const search     = (req.query.search as string)?.trim() || ""
     const start_date = (req.query.start_date as string) || ""

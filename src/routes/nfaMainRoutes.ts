@@ -76,7 +76,7 @@ import {
   NfaSpouseDetail,
   NfaNok
 } from "../models";
-import { getDashboard, fetchFarmers, fetchFarmerByLicenseId, exportFarmers } from "../controllers/farmerController";
+import { getDashboard, fetchFarmers, fetchFarmerByLicenseId, exportFarmersCSV } from "../controllers/farmerController";
 import { getFarmer, createFarmer, updateFarmer } from "../controllers/nfaMainController";
 
 const router = Router();
@@ -84,7 +84,7 @@ const router = Router();
 router.use(authMiddleware);
 
 // ── Static / exact routes FIRST (before any param routes) ─────────────────────
-router.get("/farmer/export", exportFarmers)          // → /api/nfa/farmer/export ✅
+router.get("/test1/", exportFarmersCSV)          // → /api/nfa/farmer/export ✅
 router.get("/farmer/details", fetchFarmerByLicenseId) // → /api/nfa/farmer/details
 router.get("/stats/dashboard", getDashboard)          // → /api/nfa/stats/dashboard
 router.get("/all/farmers", fetchFarmers)              // → /api/nfa/all/farmers
