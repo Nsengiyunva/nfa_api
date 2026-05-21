@@ -202,7 +202,13 @@ export const fetchFarmers = async (req: Request, res: Response) => {
       LEFT JOIN nfa_block_details c ON a.id = c.parentID
       LEFT JOIN nfa_individual d ON a.id = d.parentID
       ${WHERE}
-      ORDER BY a.id DESC
+      ORDER BY 
+        CASE 
+          WHEN a.licenseID IS NULL OR a.licenseID = '' THEN 1 
+          ELSE 0 
+        END ASC,
+        CAST(a.licenseID AS UNSIGNED) DESC,
+        a.id DESC
     `;
 
     if (!hasPagination) {
