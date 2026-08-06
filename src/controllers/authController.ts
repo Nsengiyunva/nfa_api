@@ -122,7 +122,9 @@ export const getUserById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
-    const user = await Admin.findByPk(id);
+    const user = await Admin.findByPk(id, {
+      attributes: { exclude: ["password"] },
+    });
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -191,7 +193,7 @@ export const updateUser = async (req: Request, res: Response) => {
 export const getAllUsers = async (req: Request, res: Response) => {
   try {
     const users = await Admin.findAll({
-      // attributes: ["id", "name", "email"], // exclude password
+      attributes: { exclude: ["password"] },
       order: [["id", "DESC"]]
     });
 
